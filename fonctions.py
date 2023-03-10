@@ -1,10 +1,11 @@
 import os
 import time
-from CONSTANTES import OPTIONS, CURL_ANIMETHEME, MAX_RETRIES, DELAY
+from CONSTANTES import OPTIONS, CURL_ANIMETHEME, MAX_RETRIES, DELAY, EXCEPTIONS_SPECIALES
 import tkinter as tk
 from tkinter import filedialog
 import requests
 import youtube_dl
+
 
 def print_menu():
     for key in OPTIONS.keys():
@@ -24,11 +25,13 @@ def getByFile():
     liste_anime = fileReader()
     downloader(liste_anime)
 
+
 def terminal_clear():
     try:
         os.system("clear")
     except:
         os.system("cls")
+
 
 def get_convert_file():
     liste_anim = []
@@ -45,6 +48,7 @@ def get_convert_file():
     else:
         return None
 
+
 def getByInput():
     print("Attention, la moindre faute de frappe dans le nom de l'anime peut ne pas trouver votre anime")
     print("Laissez les espaces et mettez une majuscule a chaque mot du nom. (Lycoris Recoil par exemple)")
@@ -52,14 +56,15 @@ def getByInput():
     AnimeName = input("Entrez le nom de l'anime recherché : ")
     downloader([AnimeName])
 
+
 def getByAnilist():
     username = input("Entrez votre pseudo AniList : ")
     variables = {
         'username': username,
     }
     query = '''
-        query ($username: String) { 
-            MediaListCollection(userName: $username, type: ANIME) { 
+        query ($username: String) {
+            MediaListCollection(userName: $username, type: ANIME) {
                 lists {
                     name
                     entries {
@@ -94,31 +99,53 @@ def getByAnilist():
     downloader(lstAnimeName)
 
 
-
 def downloader(listeAnime):
-    headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36"}
+    undownloadable = []
+    cpt = 1
     for anime in listeAnime:
         alwaysOPs = True
         numOp = 1
         while (alwaysOPs):
+            terminal_clear()
+            print(str(cpt) + "/" + str(len(listeAnime)))
+            print("Nombre d'animes non trouvés : " + str(len(undownloadable)))
             AnimeName = stringJoiner(anime)
             link = createLink(AnimeName, numOp)
             print(link)
-            for _ in range(MAX_RETRIES):
-                try:
-                    ydl_opts = {
-                        'outtmpl': './downloads/'+AnimeName + "_OP" + str(numOp) + ".webm",
-                    }
-                    with youtube_dl.YoutubeDL(ydl_opts) as ydl:
-                        ydl.download([link])
-                        break
-                except:
-                    alwaysOPs = False
-                    break
+            try:
+                ydl_opts = {
+                    'outtmpl': './downloads/'+AnimeName + "_OP" + str(numOp) + ".webm",
+                }
+                with youtube_dl.YoutubeDL(ydl_opts) as ydl:
+                    ydl.download([link])
+            except:
+                if numOp == 1:
+                    undownloadable.append(AnimeName)
+                alwaysOPs = False
             numOp += 1
+        cpt +=1
+    if undownloadable != []:
+        print("Des animes n'ont pas pu être téléchargés. Essayez un autre nom, ou prennez le sur MyAnimeList et réessayez en individuel. ")
+        print("Les animes non téléchargés : ")
+        print(undownloadable)
 
 
 def createLink(AnimeName, numOP):
+    for exception in EXCEPTIONS_SPECIALES:
+        if exception[0] in AnimeName:
+            AnimeName = exception[1]
+            break
+    caracteres_a_supprimer = "!@#:,∬./-_"
+    AnimeName = ''.join(c for c in AnimeName if c not in caracteres_a_supprimer)
+    saison = AnimeName[-1]
+    if AnimeName.endswith("Season"):
+        AnimeName = AnimeName[0:-8]
+    if saison.isnumeric():
+        anime_name_list = list(AnimeName)
+        anime_name_list.pop(-1)
+        AnimeName = "".join(anime_name_list)
+        AnimeName += "S" + saison
+    
     return CURL_ANIMETHEME + AnimeName + "-OP" + str(numOP) + ".webm"
 
 
