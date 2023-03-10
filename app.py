@@ -5,14 +5,13 @@ print("AniDown V0.2")
 while (True):
     f.print_menu()
     choix = int(input('Entrez le numéro de votre choix :'))
+    f.terminal_clear()
     if choix == 1:
-        AniList_load()
+        f.getByAnilist()
     elif choix == 2:
-        f.fileReader()
+        f.getByFile()
     elif choix == 3:
-        print('Actuellement indisponible')
-    elif choix == 4:
-        print('Actuellement indisponible')
+        f.getByInput()
     elif choix == 4:
         exit
     else:
