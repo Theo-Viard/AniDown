@@ -7,7 +7,7 @@ OPTIONS = {
 CURL_ANIMETHEME = "https://v.animethemes.moe/"
 MAX_RETRIES = 5
 DELAY = 30
-EXCEPTIONS_SPECIALES = [
+EXCEPTIONS = [
     ["Re:Zero","ReZero"],
     ["EightySix","86"]
     ]

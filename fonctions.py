@@ -1,6 +1,6 @@
 import os
 import time
-from CONSTANTES import OPTIONS, CURL_ANIMETHEME, MAX_RETRIES, DELAY, EXCEPTIONS_SPECIALES
+from CONSTANTES import OPTIONS, CURL_ANIMETHEME, EXCEPTIONS
 import tkinter as tk
 from tkinter import filedialog
 import requests
@@ -54,7 +54,27 @@ def getByInput():
     print("Laissez les espaces et mettez une majuscule a chaque mot du nom. (Lycoris Recoil par exemple)")
     print("Si vous avez un doute recopiez le nom exact de l'anime sur le site https://myanimelist.net/")
     AnimeName = input("Entrez le nom de l'anime recherché : ")
-    downloader([AnimeName])
+    getIndividualAnimeOpeningByName(AnimeName)
+    # downloader([AnimeName])
+
+def getIndividualAnimeOpeningByName(AnimeName):
+    url = "https://api.animethemes.moe/search"
+    params = {"q": AnimeName, "limit" : 1}
+    response = requests.get(url, params=params)
+    if response.status_code == 200:
+        data = response.json()
+        for videos in data['search']['videos']:
+            if 'OP' in videos['filename']:
+                try:
+                    ydl_opts = {
+                    'outtmpl': './downloads/'+AnimeName + "/" + videos['basename']
+                    }
+                    with youtube_dl.YoutubeDL(ydl_opts) as ydl:
+                        ydl.download([videos['link']])
+                except: 
+                    print('error')
+    else:
+        print("Limit Rate Download Exceded", response.status_code)
 
 
 def getByAnilist():
@@ -90,8 +110,7 @@ def getByAnilist():
                              json={'query': query, 'variables': variables})
     data = response.json()
     lstAnimeName = []
-    for i in range(7):
-        for o in data['data']['MediaListCollection']['lists'][i]['entries']:
+    for o in data['data']['MediaListCollection']['lists'][0]['entries']:
             animeName = ""
             for anime in o['media']['title']['romaji']:
                 animeName += anime
@@ -103,39 +122,25 @@ def downloader(listeAnime):
     undownloadable = []
     cpt = 1
     for anime in listeAnime:
-        alwaysOPs = True
-        numOp = 1
-        while (alwaysOPs):
-            terminal_clear()
-            print(str(cpt) + "/" + str(len(listeAnime)))
-            print("Nombre d'animes non trouvés : " + str(len(undownloadable)))
-            AnimeName = stringJoiner(anime)
-            link = createLink(AnimeName, numOp)
-            print(link)
-            try:
-                ydl_opts = {
-                    'outtmpl': './downloads/'+AnimeName + "_OP" + str(numOp) + ".webm",
-                }
-                with youtube_dl.YoutubeDL(ydl_opts) as ydl:
-                    ydl.download([link])
-            except:
-                if numOp == 1:
-                    undownloadable.append(AnimeName)
-                alwaysOPs = False
-            numOp += 1
+        terminal_clear()
+        print(str(cpt) + "/" + str(len(listeAnime)))
+        print("Nombre d'animes non trouvés : " + str(len(undownloadable)))
+        result = getIndividualAnimeOpeningByName(anime)
+        if result != "":
+            undownloadable.append(anime)
         cpt +=1
-    if undownloadable != []:
-        print("Des animes n'ont pas pu être téléchargés. Essayez un autre nom, ou prennez le sur MyAnimeList et réessayez en individuel. ")
-        print("Les animes non téléchargés : ")
-        print(undownloadable)
+    # if undownloadable != []:
+    #     print("Des animes n'ont pas pu être téléchargés. Essayez un autre nom, ou prennez le sur MyAnimeList et réessayez en individuel. ")
+    #     print("Les animes non téléchargés : ")
+    #     print(undownloadable)
 
 
 def createLink(AnimeName, numOP):
-    for exception in EXCEPTIONS_SPECIALES:
+    for exception in EXCEPTIONS:
         if exception[0] in AnimeName:
             AnimeName = exception[1]
             break
-    caracteres_a_supprimer = "!@#:,∬./-_"
+    caracteres_a_supprimer = "!@#:,∬./-_?"
     AnimeName = ''.join(c for c in AnimeName if c not in caracteres_a_supprimer)
     saison = AnimeName[-1]
     if AnimeName.endswith("Season"):
