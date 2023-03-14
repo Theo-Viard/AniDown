@@ -2,7 +2,8 @@ OPTIONS = {
     1: "Importer d'AniList",
     2: "Importer d'un fichier",
     3: "Chercher un anime en particulier",
-    4: "Quitter",
+    4: "Conversion MP4",
+    5: "Quitter"
 }
 QUERY = '''
         query ($username: String) {
@@ -28,3 +29,5 @@ QUERY = '''
             }
         }
 '''
+
+SEARCH_URL = "https://api.animethemes.moe/search"
