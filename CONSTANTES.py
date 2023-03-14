@@ -4,10 +4,27 @@ OPTIONS = {
     3: "Chercher un anime en particulier",
     4: "Quitter",
 }
-CURL_ANIMETHEME = "https://v.animethemes.moe/"
-MAX_RETRIES = 5
-DELAY = 30
-EXCEPTIONS = [
-    ["Re:Zero","ReZero"],
-    ["EightySix","86"]
-    ]
+QUERY = '''
+        query ($username: String) {
+            MediaListCollection(userName: $username, type: ANIME) {
+                lists {
+                    name
+                    entries {
+                        id
+                        status
+                        score(format: POINT_10)
+                        progress
+                        notes
+                        repeat
+                        media {
+                            chapters
+                            volumes
+                            idMal
+                            episodes
+                            title { romaji }
+                        }
+                    }
+                }
+            }
+        }
+'''
