@@ -1,6 +1,7 @@
 # Imports
 import os
-from CONSTANTES import OPTIONS, QUERY, SEARCH_URL
+from threading import Thread
+from CONSTANTES import ANI_URL, OPTIONS, QUERY, SEARCH_URL
 import tkinter as tk
 from tkinter import filedialog
 import requests
@@ -36,7 +37,7 @@ def getByFile():
             lignes = f.readlines()
         for line in lignes:
             listAnimeNames.append(line.strip())
-        getIndividualAnimeOpeningByName(listAnimeNames)
+        download_all_anime(listAnimeNames)
     else:
         print('Le fichier est invalide ou corrompu')
 
@@ -48,8 +49,7 @@ def getByAnilist():
     variables = {
         'username': username,
     }
-    response = requests.post('https://graphql.anilist.co',
-                             json={'query': QUERY, 'variables': variables})
+    response = requests.post(ANI_URL, json={'query': QUERY, 'variables': variables})
     data = response.json()
     lstAnimeName = []
     for o in data['data']['MediaListCollection']['lists'][0]['entries']:
@@ -83,11 +83,14 @@ def getOnly1080NC(AnimeList):
 
 
     for animeData in AnimeList:
-        numOpening = animeData['filename'].split("-")[-1]
-        if numOpening in dictionnaireOpenings.keys() and "OP" in numOpening:
+        if "OP" in animeData['filename'].split("-")[-1]:
+            numOpening = animeData['filename'].split("-")[-1]
+        else:
+            numOpening = animeData['filename'].split("-")[-2]
+        if (numOpening in dictionnaireOpenings.keys() and "OP" in numOpening):
             if animeData['nc']: # Vérification du no credits
-                if animeData['dictionnaireOpeningsolution'] >= dictionnaireOpenings[numOpening]['dictionnaireOpeningsolution']: # Comparaison de la meilleure résolution
-                    dictionnaireOpenings[numOpening] = animeData
+                if animeData['resolution'] >= dictionnaireOpenings[numOpening]['resolution']: # Comparaison de la meilleure résolution
+                        dictionnaireOpenings[numOpening] = animeData
         else:
             dictionnaireOpenings[numOpening] = animeData
     return dictionnaireOpenings
@@ -129,6 +132,8 @@ def getIndividualAnimeOpeningByName(AnimeName):
                     convertFile(output)
     else:
         print("Limit Rate Download Exceded", response.status_code)
+        Thread.sleep(5)
+        getIndividualAnimeOpeningByName(AnimeName)
 
 def download_all_anime(listeAnime):
     """
@@ -166,8 +171,10 @@ def printMenu():
     """
     Affiche le menu du fichier CONSTANTES
     """    
+    print("|---------------------------------------------------------------|")
     for key in OPTIONS.keys():
-        print(key, '--', OPTIONS[key])
+        print("|    " + str(key), '--', OPTIONS[key])
+    print("|---------------------------------------------------------------|")
 
 def terminal_clear():
     """
@@ -190,5 +197,3 @@ def gestionInput(numero,conversion):
         getByFile()
     elif numero == 3:
         getByInput()
-    elif numero == 5:
-        exit

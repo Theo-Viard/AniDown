@@ -1,5 +1,5 @@
 import fonctions as f
-print("AniDown V0.2")
+print("AniDown V1.2 - Dev By Théo Viard")
 
 CONVERSION = False
 while (True):
@@ -15,5 +15,7 @@ while (True):
             CONVERSION = False
         else:
             CONVERSION = True
+    elif choix == 5:
+        break
     else:
         print("Option invalide")

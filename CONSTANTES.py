@@ -31,3 +31,4 @@ QUERY = '''
 '''
 
 SEARCH_URL = "https://api.animethemes.moe/search"
+ANI_URL = 'https://graphql.anilist.co'
