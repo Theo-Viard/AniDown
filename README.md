@@ -8,11 +8,11 @@
     <br> 
 </p>
 
-## 🧐 About <a name = "about"></a>
+## 🧐 A Propos <a name = "about"></a>
 
 Ce projet a pour objectif d'aider les personnes dans le besoin de télécharger des openings d'animes pour des AMV/ASMV simplement. Il est conçu pour fonctionner sous Python et nécéssite l'installation de deux librairies
 
-## Prerequisites
+## Prérequis
 
 Téléchargez le zip du projet ou clonez le dans un répertoire avec un espace de stockage suffisant pour télécharger la totalité des openings (pensez bien que les openings prennent de la place avec les NCBD, Live et les différentes versions.)
 Vous devez installer une librairie de téléchargement de vidéos sur un site web et de conversion. Vous n'avez qu'a effectuer la commande suivante : 
