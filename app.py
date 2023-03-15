@@ -1,5 +1,4 @@
 import fonctions as f
-print("AniDown V1.2 - Dev By Théo Viard")
 
 CONVERSION = False
 while (True):

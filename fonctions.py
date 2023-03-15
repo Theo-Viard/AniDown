@@ -1,7 +1,6 @@
 # Imports
 import os
-from threading import Thread
-from CONSTANTES import ANI_URL, OPTIONS, QUERY, SEARCH_URL
+from CONSTANTES import OPTIONS, QUERY, SEARCH_URL
 import tkinter as tk
 from tkinter import filedialog
 import requests
@@ -49,14 +48,19 @@ def getByAnilist():
     variables = {
         'username': username,
     }
-    response = requests.post(ANI_URL, json={'query': QUERY, 'variables': variables})
+    response = requests.post('https://graphql.anilist.co',
+                             json={'query': QUERY, 'variables': variables})
     data = response.json()
     lstAnimeName = []
-    for o in data['data']['MediaListCollection']['lists'][0]['entries']:
+    try:
+        for o in data['data']['MediaListCollection']['lists'][0]['entries']:
             animeName = ""
             for anime in o['media']['title']['romaji']:
                 animeName += anime
             lstAnimeName.append(animeName)
+    except:
+        input("Ce compte n'existe pas")
+        terminal_clear()
     download_all_anime(lstAnimeName)
 
 def getByInput():
@@ -83,14 +87,12 @@ def getOnly1080NC(AnimeList):
 
 
     for animeData in AnimeList:
-        if "OP" in animeData['filename'].split("-")[-1]:
-            numOpening = animeData['filename'].split("-")[-1]
-        else:
-            numOpening = animeData['filename'].split("-")[-2]
-        if (numOpening in dictionnaireOpenings.keys() and "OP" in numOpening):
+        numOpening = animeData['filename'].split("-")[-1]
+        if (numOpening in dictionnaireOpenings.keys() and "OP" in numOpening) or numOpening == "NCBD1080":
             if animeData['nc']: # Vérification du no credits
-                if animeData['resolution'] >= dictionnaireOpenings[numOpening]['resolution']: # Comparaison de la meilleure résolution
-                        dictionnaireOpenings[numOpening] = animeData
+                if animeData['dictionnaireOpeningsolution'] >= dictionnaireOpenings[numOpening]['dictionnaireOpeningsolution']: # Comparaison de la meilleure résolution
+                    if numOpening == "NCBD1080":
+                        dictionnaireOpenings[animeData['filename'].split("-")[-2]] = animeData
         else:
             dictionnaireOpenings[numOpening] = animeData
     return dictionnaireOpenings
@@ -132,8 +134,6 @@ def getIndividualAnimeOpeningByName(AnimeName):
                     convertFile(output)
     else:
         print("Limit Rate Download Exceded", response.status_code)
-        Thread.sleep(5)
-        getIndividualAnimeOpeningByName(AnimeName)
 
 def download_all_anime(listeAnime):
     """
@@ -171,19 +171,18 @@ def printMenu():
     """
     Affiche le menu du fichier CONSTANTES
     """    
-    print("|---------------------------------------------------------------|")
+    print("AniDown V1")
+    print("|------------------------------------------------------------------|")
     for key in OPTIONS.keys():
-        print("|    " + str(key), '--', OPTIONS[key])
-    print("|---------------------------------------------------------------|")
+        print("    " + str(key), '--', OPTIONS[key])
+    print("|------------------------------------------------------------------|")
 
 def terminal_clear():
     """
     Clear le terminal
     """
-    try:
-        os.system("clear")
-    except:
-        os.system("cls")
+    os.system("clear")
+    os.system("cls")
 
 def gestionInput(numero,conversion):
     """
@@ -197,3 +196,5 @@ def gestionInput(numero,conversion):
         getByFile()
     elif numero == 3:
         getByInput()
+    elif numero == 5:
+        exit
